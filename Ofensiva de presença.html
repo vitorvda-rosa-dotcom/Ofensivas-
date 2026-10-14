@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ofensiva de presença</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#ECEEF0; --surface:#FFFFFF; --ink:#1E2328; --muted:#5E6872; --line:#CBD1D6;
+  --yellow:#F2C200; --on-yellow:#1E2328; --ok:#1F7A52; --bad:#B8322A; --off:#D5DADF; --on-off:#4A545D;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171A; --surface:#1E2327; --ink:#EDEFF1; --muted:#9AA4AD; --line:#343C43;
+    --ok:#4CC38A; --bad:#F0736A; --off:#2C343A; --on-off:#AAB3BB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171A; --surface:#1E2327; --ink:#EDEFF1; --muted:#9AA4AD; --line:#343C43;
+  --ok:#4CC38A; --bad:#F0736A; --off:#2C343A; --on-off:#AAB3BB;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:17px;line-height:1.45}
+main{max-width:520px;margin:0 auto;padding:20px 16px 48px}
+h1,h2,.num{font-family:'Barlow Condensed','Arial Narrow',Impact,sans-serif;font-weight:700;margin:0}
+h1{font-size:28px;letter-spacing:.2px}
+h2{font-size:22px;margin-bottom:10px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.chip{font-weight:600;font-size:15px;padding:4px 10px;border-radius:3px;background:var(--off);color:var(--on-off);white-space:nowrap}
+.chip.on{background:var(--ok);color:#fff}
+.chip.off{background:var(--bad);color:#fff}
+:root[data-theme="dark"] .chip.on,:root:not([data-theme="light"]) .chip.on{color:#0E1A14}
+.hero{background:var(--yellow);color:var(--on-yellow);border-radius:4px;padding:20px 20px 18px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:repeating-linear-gradient(135deg,#1E2328 0 12px,transparent 12px 24px)}
+.hero.broken{background:var(--off);color:var(--ink)}
+.hero.broken::before{background:repeating-linear-gradient(135deg,var(--bad) 0 12px,transparent 12px 24px)}
+.hero .num{font-size:104px;line-height:.9;margin-top:14px}
+.hero .lbl{font-size:20px;font-weight:600;margin-top:4px}
+.hero .sub{margin-top:10px;font-size:16px}
+.bar{height:10px;background:rgba(30,35,40,.2);border-radius:2px;margin-top:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:#1E2328;transition:width .4s ease}
+.hero.broken .bar i{background:var(--bad)}
+.notice{margin:12px 0 0;padding:12px 14px;border-left:6px solid var(--bad);background:var(--surface);border-radius:3px;font-size:16px}
+button{font:inherit;cursor:pointer}
+.cta{display:block;width:100%;margin-top:14px;padding:16px;border:0;border-radius:4px;background:var(--ink);color:var(--bg);font-weight:600;font-size:19px}
+.cta:disabled{background:var(--off);color:var(--on-off);cursor:default}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.week{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:22px 0 6px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:8px 0 10px;text-align:center}
+.day b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;color:var(--muted)}
+.day span{display:block;font-size:22px;line-height:1.3;font-weight:600}
+.day small{display:block;font-size:13px;color:var(--muted)}
+.day.ok{border-color:var(--ok)} .day.ok span{color:var(--ok)}
+.day.miss{border-color:var(--bad)} .day.miss span{color:var(--bad)}
+.day.today{border:2px solid var(--ink)}
+.day.future,.day.na{opacity:.55}
+.legend{font-size:14px;color:var(--muted);margin:0 0 24px}
+.ladder{list-style:none;margin:0;padding:0;position:relative}
+.ladder::before{content:"";position:absolute;left:19px;top:20px;bottom:20px;width:4px;background:var(--line)}
+.ladder li{position:relative;display:flex;gap:14px;align-items:center;padding:8px 0}
+.node{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;background:var(--surface);border:3px solid var(--line);color:var(--muted);z-index:1}
+.ladder li.ready .node{border-color:var(--yellow);background:var(--yellow);color:var(--on-yellow)}
+.ladder li.done .node{border-color:var(--ok);background:var(--ok);color:#fff}
+.ladder li.reached .node{border-color:var(--ink);color:var(--ink)}
+.info{flex:1;min-width:0}
+.info strong{display:block;font-weight:600}
+.info span{font-size:15px;color:var(--muted)}
+.claim{flex:none;border:0;border-radius:4px;padding:10px 14px;background:var(--yellow);color:var(--on-yellow);font-weight:600}
+.tag{flex:none;font-size:14px;font-weight:600;color:var(--ok)}
+.total{margin:14px 0 0;color:var(--muted);font-size:15px}
+details{margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-weight:600}
+.sim{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.sim button{padding:10px 12px;border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:15px}
+.sim-note{font-size:14px;color:var(--muted);margin:10px 0 0}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Ofensiva de presença</h1>
+    <span id="chip" class="chip">Desarmado</span>
+  </header>
+
+  <section id="hero" class="hero" aria-live="polite"></section>
+  <div id="notice"></div>
+  <button id="checkin" class="cta"></button>
+
+  <div id="week" class="week"></div>
+  <p class="legend">Só dias de aula contam (segunda a sexta). Faltou em um dia útil, a ofensiva volta a zero.</p>
+
+  <h2>Recompensas</h2>
+  <ol id="ladder" class="ladder"></ol>
+  <p id="total" class="total"></p>
+
+  <details>
+    <summary>Modo teste: simular os dias</summary>
+    <div class="sim">
+      <button id="next1">Avançar 1 dia</button>
+      <button id="next2">Avançar 2 dias (pular um)</button>
+      <button id="reset">Zerar tudo</button>
+    </div>
+    <p class="sim-note">Use para ver o sistema funcionando sem esperar dias reais. Avançar 1 dia permite marcar presença de novo; pular um dia útil sem marcar zera a ofensiva.</p>
+  </details>
+</main>
+
+<script>
+var KEY='ofensiva-presenca-v1';
+var MILESTONES=[
+  {d:3,t:'Selo Bronze',s:'Três dias seguidos'},
+  {d:5,t:'Selo Semana Completa',s:'Uma semana de aula sem faltar'},
+  {d:10,t:'Prioridade na escolha de bancada',s:'Duas semanas sem faltar'},
+  {d:20,t:'Bônus na nota de participação',s:'Quatro semanas sem faltar'},
+  {d:40,t:'Certificado de Assiduidade',s:'Oito semanas sem faltar'}
+];
+var WD=['Seg','Ter','Qua','Qui','Sex'];
+
+function fresh(){return {start:null,last:null,streak:0,best:0,hist:[],claimed:[],total:0,offset:0,broke:null}}
+function load(){try{var r=localStorage.getItem(KEY);if(r){return Object.assign(fresh(),JSON.parse(r))}}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+var S=load();
+
+function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parse(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12)}
+function br(s){var p=s.split('-');return p[2]+'/'+p[1]}
+function today(){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+S.offset);return d}
+function isWk(d){var g=d.getDay();return g>0&&g<6}
+
+function missedBetween(lastStr,t){
+  var d=parse(lastStr);d.setDate(d.getDate()+1);var out=[];var end=fmt(t);
+  while(fmt(d)<end){if(isWk(d))out.push(fmt(d));d.setDate(d.getDate()+1)}
+  return out;
+}
+function settle(){
+  if(S.last&&S.streak>0){
+    var m=missedBetween(S.last,today());
+    if(m.length){S.broke={date:m[0],lost:S.streak};S.streak=0;S.claimed=[];save()}
+  }
+}
+function nextMilestone(){for(var i=0;i<MILESTONES.length;i++){if(S.streak<MILESTONES[i].d)return MILESTONES[i]}return null}
+function prevMark(){var p=0;for(var i=0;i<MILESTONES.length;i++){if(S.streak>=MILESTONES[i].d)p=MILESTONES[i].d}return p}
+
+function checkIn(){
+  settle();
+  var t=today(),ds=fmt(t);
+  if(!isWk(t)||S.last===ds)return;
+  S.streak+=1;
+  if(S.streak>S.best)S.best=S.streak;
+  S.last=ds;
+  if(!S.start)S.start=ds;
+  if(S.hist.indexOf(ds)<0)S.hist.push(ds);
+  S.broke=null;
+  save();render();
+}
+function claim(d){
+  if(S.streak>=d&&S.claimed.indexOf(d)<0){S.claimed.push(d);S.total+=1;save();render()}
+}
+
+function render(){
+  settle();
+  var t=today(),ds=fmt(t),weekday=isWk(t),done=S.last===ds;
+  var chip=document.getElementById('chip');
+  var live=S.streak>0;
+  chip.textContent=live?'Energizado':'Desarmado';
+  chip.className='chip '+(live?'on':(S.broke?'off':''));
+
+  var nm=nextMilestone(),pm=prevMark();
+  var pct=nm?Math.round((S.streak-pm)/(nm.d-pm)*100):100;
+  var sub;
+  if(nm){var f=nm.d-S.streak;sub='Faltam '+f+(f===1?' dia':' dias')+' para: '+nm.t}
+  else sub='Você completou todas as recompensas deste ciclo.';
+  if(!live&&!S.broke&&!S.start)sub='Marque presença hoje para começar sua ofensiva.';
+  if(!live&&S.broke)sub='Marque presença hoje para recomeçar. Seu recorde: '+S.best+(S.best===1?' dia.':' dias.');
+  var hero=document.getElementById('hero');
+  hero.className='hero'+(S.broke&&!live?' broken':'');
+  hero.innerHTML='<div class="num">'+S.streak+'</div><div class="lbl">'+(S.streak===1?'dia seguido':'dias seguidos')+'</div><div class="sub">'+sub+'</div><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct+'"><i style="width:'+pct+'%"></i></div>';
+
+  var n=document.getElementById('notice');
+  n.innerHTML=(S.broke&&!live)?'<p class="notice"><strong>O disjuntor desarmou.</strong> Falta em '+br(S.broke.date)+'. Você tinha '+S.broke.lost+(S.broke.lost===1?' dia':' dias')+' e as recompensas ainda não resgatadas foram perdidas.</p>':'';
+
+  var b=document.getElementById('checkin');
+  b.disabled=!weekday||done;
+  b.textContent=!weekday?'Hoje não tem aula':(done?'Presença registrada hoje':'Marcar presença');
+
+  var mon=new Date(t);mon.setDate(mon.getDate()-((t.getDay()+6)%7));
+  var wk='';
+  for(var i=0;i<5;i++){
+    var d=new Date(mon);d.setDate(mon.getDate()+i);var s=fmt(d),cls,sym,tx;
+    if(S.hist.indexOf(s)>=0){cls='ok';sym='✔';tx='Presente'}
+    else if(s===ds){cls='today';sym='•';tx='Hoje'}
+    else if(s<ds){if(S.start&&s>=S.start){cls='miss';sym='✕';tx='Faltou'}else{cls='na';sym='–';tx=''}}
+    else{cls='future';sym='';tx=''}
+    if(s===ds&&cls==='ok')cls='ok today';
+    wk+='<div class="day '+cls+'"><b>'+WD[i]+'</b><span>'+sym+'</span><small>'+br(s)+'</small></div>';
+  }
+  document.getElementById('week').innerHTML=wk;
+
+  var lad='';
+  MILESTONES.forEach(function(m){
+    var claimed=S.claimed.indexOf(m.d)>=0,ready=S.streak>=m.d&&!claimed;
+    var cls=claimed?'done':(ready?'ready':(S.streak>=m.d?'reached':''));
+    var right=claimed?'<span class="tag">Resgatada</span>':(ready?'<button class="claim" data-d="'+m.d+'">Resgatar</button>':'');
+    lad+='<li class="'+cls+'"><div class="node">'+m.d+'</div><div class="info"><strong>'+m.t+'</strong><span>'+m.s+'</span></div>'+right+'</li>';
+  });
+  document.getElementById('ladder').innerHTML=lad;
+  document.getElementById('total').textContent=S.total>0?'Recompensas resgatadas até agora: '+S.total+'. Melhor ofensiva: '+S.best+(S.best===1?' dia.':' dias.'):'';
+}
+
+document.getElementById('checkin').addEventListener('click',checkIn);
+document.getElementById('ladder').addEventListener('click',function(e){
+  var b=e.target.closest('.claim');if(b)claim(Number(b.getAttribute('data-d')));
+});
+document.getElementById('next1').addEventListener('click',function(){S.offset+=1;save();render()});
+document.getElementById('next2').addEventListener('click',function(){S.offset+=2;save();render()});
+document.getElementById('reset').addEventListener('click',function(){S=fresh();save();render()});
+render();
+</script>
+</body>
+</html>
